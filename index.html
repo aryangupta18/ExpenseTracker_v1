@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Expense Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="bg">
+      <div class="bg__blob bg__blob--a"></div>
+      <div class="bg__blob bg__blob--b"></div>
+      <div class="bg__blob bg__blob--c"></div>
+    </div>
+
+    <header class="topbar">
+      <nav class="navpill" aria-label="Primary">
+        <div class="navpill__brand">
+          <span class="dot"></span>
+          <span>Expense Tracker</span>
+        </div>
+        <div class="navpill__controls">
+          <div class="seg" role="group" aria-label="Time range filter">
+            <button class="seg__btn is-active" data-range="daily" type="button">Daily</button>
+            <button class="seg__btn" data-range="weekly" type="button">Weekly</button>
+            <button class="seg__btn" data-range="monthly" type="button">Monthly</button>
+            <button class="seg__btn" data-range="yearly" type="button">Yearly</button>
+          </div>
+          <button class="btn btn--ghost" id="logoutBtn" type="button">Logout</button>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container" id="app" aria-hidden="true">
+      <section class="grid">
+        <article class="card card--input" aria-label="Add expense">
+          <div class="card__header">
+            <h2>Add expense</h2>
+            <p class="muted">Track spending with categories.</p>
+          </div>
+
+          <form id="expenseForm" class="form" autocomplete="off">
+            <div class="field">
+              <label for="title">Title</label>
+              <input id="title" name="title" type="text" placeholder="e.g., Lunch" required />
+            </div>
+
+            <div class="field field--row">
+              <div>
+                <label for="amount">Amount</label>
+                <input
+                  id="amount"
+                  name="amount"
+                  inputmode="decimal"
+                  type="text"
+                  placeholder="e.g., 120.50"
+                  required
+                />
+              </div>
+              <div>
+                <label for="date">Date</label>
+                <input id="date" name="date" type="date" required />
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="category">Category</label>
+              <select id="category" name="category" required></select>
+            </div>
+
+            <div class="field field--row">
+              <button class="btn btn--primary" type="submit">Add transaction</button>
+              <button class="btn btn--ghost" id="clearAllBtn" type="button" title="Clears all data">
+                Clear all
+              </button>
+            </div>
+
+            <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+          </form>
+
+          <div class="divider"></div>
+
+          <div class="budget">
+            <div class="budget__header">
+              <h3>Budget planner</h3>
+              <p class="muted">Set a budget for a fixed duration.</p>
+            </div>
+
+            <form id="budgetForm" class="form" autocomplete="off">
+              <div class="field">
+                <label for="budgetAmount">Budget amount (monthly or custom)</label>
+                <input
+                  id="budgetAmount"
+                  name="budgetAmount"
+                  inputmode="decimal"
+                  type="text"
+                  placeholder="e.g., 15000"
+                  required
+                />
+              </div>
+
+              <div class="field">
+                <label>Duration</label>
+                <div class="radioRow">
+                  <label class="radio">
+                    <input type="radio" name="budgetMode" value="days" checked />
+                    <span>Number of days</span>
+                  </label>
+                  <label class="radio">
+                    <input type="radio" name="budgetMode" value="range" />
+                    <span>Date range</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="field field--row" id="budgetDaysRow">
+                <div>
+                  <label for="budgetStart">Start date</label>
+                  <input id="budgetStart" name="budgetStart" type="date" required />
+                </div>
+                <div>
+                  <label for="budgetDays">Days</label>
+                  <input id="budgetDays" name="budgetDays" inputmode="numeric" type="text" placeholder="30" required />
+                </div>
+              </div>
+
+              <div class="field field--row is-hidden" id="budgetRangeRow">
+                <div>
+                  <label for="budgetFrom">From</label>
+                  <input id="budgetFrom" name="budgetFrom" type="date" />
+                </div>
+                <div>
+                  <label for="budgetTo">To</label>
+                  <input id="budgetTo" name="budgetTo" type="date" />
+                </div>
+              </div>
+
+              <div class="field field--row">
+                <button class="btn btn--primary" type="submit">Save budget</button>
+                <button class="btn btn--ghost" id="clearBudgetBtn" type="button">Remove</button>
+              </div>
+            </form>
+
+            <div class="budget__insights" id="budgetInsights" aria-live="polite"></div>
+          </div>
+        </article>
+
+        <article class="card card--summary" aria-label="Summary">
+          <div class="card__header">
+            <h2>Summary</h2>
+            <p class="muted">Total + category-wise percentage.</p>
+          </div>
+
+          <div class="summary">
+            <div class="metric">
+              <div class="metric__label">Total spent (<span id="summaryRangeLabel">Daily</span>)</div>
+              <div class="metric__value" id="totalSpent">₹0</div>
+            </div>
+            <div class="metric metric--sub">
+              <div class="metric__label">Transactions</div>
+              <div class="metric__value metric__value--small" id="txCount">0</div>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="bars" id="categoryBars" aria-label="Category breakdown"></div>
+        </article>
+
+        <article class="card card--tx" aria-label="Transactions">
+          <div class="card__header">
+            <h2>Transactions</h2>
+            <p class="muted">Most recent first.</p>
+          </div>
+
+          <div class="table">
+            <div class="table__head">
+              <div>Title</div>
+              <div>Category</div>
+              <div>Date</div>
+              <div class="right">Amount</div>
+              <div class="right">Action</div>
+            </div>
+            <div class="table__body" id="txList"></div>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <section class="auth" id="auth" aria-label="Login">
+      <div class="auth__card">
+        <div class="auth__header">
+          <h1>Welcome back</h1>
+          <p class="muted">Login to track your expenses.</p>
+        </div>
+
+        <div class="tabs" role="tablist" aria-label="Authentication">
+          <button class="tabs__btn is-active" data-auth-tab="login" role="tab" type="button">
+            Login
+          </button>
+          <button class="tabs__btn" data-auth-tab="signup" role="tab" type="button">
+            Sign up
+          </button>
+        </div>
+
+        <form id="loginForm" class="form auth__form" data-auth-form="login">
+          <div class="field">
+            <label for="loginEmail">Email</label>
+            <input id="loginEmail" name="email" type="email" placeholder="you@example.com" required />
+          </div>
+          <div class="field">
+            <label for="loginPassword">Password</label>
+            <input id="loginPassword" name="password" type="password" placeholder="••••••••" required />
+          </div>
+          <button class="btn btn--primary" type="submit">Login</button>
+          <div class="auth__hint muted">Demo is local-only (stored in your browser).</div>
+          <div class="toast is-centered" id="authToast" role="status" aria-live="polite"></div>
+        </form>
+
+        <form id="signupForm" class="form auth__form is-hidden" data-auth-form="signup">
+          <div class="field">
+            <label for="signupEmail">Email</label>
+            <input id="signupEmail" name="email" type="email" placeholder="you@example.com" required />
+          </div>
+          <div class="field">
+            <label for="signupPassword">Password</label>
+            <input id="signupPassword" name="password" type="password" placeholder="Minimum 6 characters" required />
+          </div>
+          <button class="btn btn--primary" type="submit">Create account</button>
+          <div class="auth__hint muted">No server required. Use any email.</div>
+          <div class="toast is-centered" id="authToast2" role="status" aria-live="polite"></div>
+        </form>
+      </div>
+    </section>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
+
