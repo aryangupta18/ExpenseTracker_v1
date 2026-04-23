@@ -25,7 +25,7 @@
           <span class="dot"></span>
           <span>Expense Tracker</span>
         </div>
-        <div class="navpill__controls">
+        <div class="navpill__controls" id="navControls">
           <div class="seg" role="group" aria-label="Time range filter">
             <button class="seg__btn is-active" data-range="daily" type="button">Daily</button>
             <button class="seg__btn" data-range="weekly" type="button">Weekly</button>
@@ -83,72 +83,70 @@
 
             <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
           </form>
+        </article>
 
-          <div class="divider"></div>
+        <article class="card card--budget" aria-label="Budget planner">
+          <div class="card__header">
+            <h2>Budget planner</h2>
+            <p class="muted">Set a budget for a fixed duration.</p>
+          </div>
 
-          <div class="budget">
-            <div class="budget__header">
-              <h3>Budget planner</h3>
-              <p class="muted">Set a budget for a fixed duration.</p>
+          <form id="budgetForm" class="form" autocomplete="off">
+            <div class="field">
+              <label for="budgetAmount">Budget amount (monthly or custom)</label>
+              <input
+                id="budgetAmount"
+                name="budgetAmount"
+                inputmode="decimal"
+                type="text"
+                placeholder="e.g., 15000"
+                required
+              />
             </div>
 
-            <form id="budgetForm" class="form" autocomplete="off">
-              <div class="field">
-                <label for="budgetAmount">Budget amount (monthly or custom)</label>
-                <input
-                  id="budgetAmount"
-                  name="budgetAmount"
-                  inputmode="decimal"
-                  type="text"
-                  placeholder="e.g., 15000"
-                  required
-                />
+            <div class="field">
+              <label>Duration</label>
+              <div class="radioRow">
+                <label class="radio">
+                  <input type="radio" name="budgetMode" value="days" checked />
+                  <span>Number of days</span>
+                </label>
+                <label class="radio">
+                  <input type="radio" name="budgetMode" value="range" />
+                  <span>Date range</span>
+                </label>
               </div>
+            </div>
 
-              <div class="field">
-                <label>Duration</label>
-                <div class="radioRow">
-                  <label class="radio">
-                    <input type="radio" name="budgetMode" value="days" checked />
-                    <span>Number of days</span>
-                  </label>
-                  <label class="radio">
-                    <input type="radio" name="budgetMode" value="range" />
-                    <span>Date range</span>
-                  </label>
-                </div>
+            <div class="field field--row" id="budgetDaysRow">
+              <div>
+                <label for="budgetStart">Start date</label>
+                <input id="budgetStart" name="budgetStart" type="date" required />
               </div>
-
-              <div class="field field--row" id="budgetDaysRow">
-                <div>
-                  <label for="budgetStart">Start date</label>
-                  <input id="budgetStart" name="budgetStart" type="date" required />
-                </div>
-                <div>
-                  <label for="budgetDays">Days</label>
-                  <input id="budgetDays" name="budgetDays" inputmode="numeric" type="text" placeholder="30" required />
-                </div>
+              <div>
+                <label for="budgetDays">Days</label>
+                <input id="budgetDays" name="budgetDays" inputmode="numeric" type="text" placeholder="30" required />
               </div>
+            </div>
 
-              <div class="field field--row is-hidden" id="budgetRangeRow">
-                <div>
-                  <label for="budgetFrom">From</label>
-                  <input id="budgetFrom" name="budgetFrom" type="date" />
-                </div>
-                <div>
-                  <label for="budgetTo">To</label>
-                  <input id="budgetTo" name="budgetTo" type="date" />
-                </div>
+            <div class="field field--row is-hidden" id="budgetRangeRow">
+              <div>
+                <label for="budgetFrom">From</label>
+                <input id="budgetFrom" name="budgetFrom" type="date" />
               </div>
-
-              <div class="field field--row">
-                <button class="btn btn--primary" type="submit">Save budget</button>
-                <button class="btn btn--ghost" id="clearBudgetBtn" type="button">Remove</button>
+              <div>
+                <label for="budgetTo">To</label>
+                <input id="budgetTo" name="budgetTo" type="date" />
               </div>
-            </form>
+            </div>
 
-            <div class="budget__insights" id="budgetInsights" aria-live="polite"></div>
-          </div>
+            <div class="field field--row">
+              <button class="btn btn--primary" type="submit">Save budget</button>
+              <button class="btn btn--ghost" id="clearBudgetBtn" type="button">Remove</button>
+            </div>
+          </form>
+
+          <div class="budget__insights" id="budgetInsights" aria-live="polite"></div>
         </article>
 
         <article class="card card--summary" aria-label="Summary">
@@ -170,7 +168,7 @@
 
           <div class="divider"></div>
 
-          <div class="bars" id="categoryBars" aria-label="Category breakdown"></div>
+          <div class="rings" id="categoryRings" aria-label="Category breakdown"></div>
         </article>
 
         <article class="card card--tx" aria-label="Transactions">
@@ -196,8 +194,8 @@
     <section class="auth" id="auth" aria-label="Login">
       <div class="auth__card">
         <div class="auth__header">
-          <h1>Welcome back</h1>
-          <p class="muted">Login to track your expenses.</p>
+          <h1 id="authTitle">Welcome back</h1>
+          <p class="muted" id="authSubtitle">Login to track your expenses.</p>
         </div>
 
         <div class="tabs" role="tablist" aria-label="Authentication">

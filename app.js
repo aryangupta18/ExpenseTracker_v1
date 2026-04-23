@@ -234,9 +234,11 @@ const authToast2 = createToast($("#authToast2"));
 function setAuthedView(isAuthed) {
   const app = $("#app");
   const auth = $("#auth");
+  const navControls = document.querySelector("#navControls");
   app.setAttribute("aria-hidden", String(!isAuthed));
   app.style.display = isAuthed ? "block" : "none";
   auth.style.display = isAuthed ? "none" : "grid";
+  if (navControls) navControls.style.display = isAuthed ? "flex" : "none";
 }
 
 function fillCategories() {
@@ -296,36 +298,68 @@ function renderSummary({ txs, total }) {
   const byCat = new Map(CATEGORIES.map((c) => [c, 0]));
   txs.forEach((t) => byCat.set(t.category, (byCat.get(t.category) || 0) + t.amount));
 
-  const bars = $("#categoryBars");
-  const max = Math.max(1, ...Array.from(byCat.values()));
+  const rings = $("#categoryRings");
   const rows = Array.from(byCat.entries())
-    .filter(([, amt]) => amt > 0 || total === 0)
+    .filter(([, amt]) => amt > 0)
     .sort((a, b) => b[1] - a[1]);
 
   if (total === 0) {
-    bars.innerHTML = `<div class="empty">Add a transaction to see category breakdown.</div>`;
+    rings.innerHTML = `<div class="empty">Add a transaction to see category breakdown.</div>`;
     return;
   }
 
-  bars.innerHTML = rows
-    .map(([cat, amt]) => {
-      const pct = total > 0 ? (amt / total) * 100 : 0;
-      const w = clamp((amt / max) * 100, 0, 100);
-      return `
-        <div class="bar">
-          <div class="bar__top">
-            <div class="bar__name">${escapeHtml(cat)}</div>
-            <div class="bar__pct">${pct.toFixed(1)}%</div>
+  const r = 44;
+  const c = 2 * Math.PI * r;
+  const gradDef = `
+    <svg width="0" height="0" aria-hidden="true" focusable="false">
+      <defs>
+        <linearGradient id="grad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#4f46e5"></stop>
+          <stop offset="100%" stop-color="#7c3aed"></stop>
+        </linearGradient>
+      </defs>
+    </svg>
+  `;
+
+  rings.innerHTML =
+    gradDef +
+    rows
+      .map(([cat, amt]) => {
+        const pct = total > 0 ? (amt / total) * 100 : 0;
+        const p = clamp(pct, 0, 100);
+        const dash = (p / 100) * c;
+        const gap = Math.max(0, c - dash);
+        return `
+          <div class="ringCard">
+            <div class="ring" aria-label="${escapeHtml(cat)} ${p.toFixed(1)} percent">
+              <svg viewBox="0 0 120 120">
+                <circle class="ring__track" cx="60" cy="60" r="${r}" fill="none" stroke-width="12"></circle>
+                <circle
+                  class="ring__progress"
+                  cx="60"
+                  cy="60"
+                  r="${r}"
+                  fill="none"
+                  stroke-width="12"
+                  stroke-dasharray="${dash.toFixed(2)} ${gap.toFixed(2)}"
+                ></circle>
+              </svg>
+              <div class="ring__text">
+                <div>
+                  <div class="ring__pct">${p.toFixed(0)}%</div>
+                  <div class="ring__label">share</div>
+                </div>
+              </div>
+            </div>
+            <div class="ringMeta">
+              <div class="ringMeta__name">${escapeHtml(cat)}</div>
+              <div class="ringMeta__amt">${escapeHtml(formatINR(amt))}</div>
+              <div class="ringMeta__hint">${pct.toFixed(1)}% of total</div>
+            </div>
           </div>
-          <div class="bar__track"><div class="bar__fill" style="width:${w.toFixed(2)}%"></div></div>
-          <div class="bar__meta">
-            <div>${escapeHtml(formatINR(amt))}</div>
-            <div>${Math.round(pct)}% share</div>
-          </div>
-        </div>
-      `;
-    })
-    .join("");
+        `;
+      })
+      .join("");
 }
 
 function txTotalInDateRange(userId, fromISO, toISO) {
@@ -430,10 +464,21 @@ function currentUserId() {
 function wireAuth() {
   const tabBtns = Array.from(document.querySelectorAll("[data-auth-tab]"));
   const forms = Array.from(document.querySelectorAll("[data-auth-form]"));
+  const authTitle = document.querySelector("#authTitle");
+  const authSubtitle = document.querySelector("#authSubtitle");
 
   function setTab(tab) {
     tabBtns.forEach((b) => b.classList.toggle("is-active", b.dataset.authTab === tab));
     forms.forEach((f) => f.classList.toggle("is-hidden", f.dataset.authForm !== tab));
+    if (authTitle && authSubtitle) {
+      if (tab === "login") {
+        authTitle.textContent = "Welcome back";
+        authSubtitle.textContent = "Login to track your expenses.";
+      } else {
+        authTitle.textContent = "Create your account";
+        authSubtitle.textContent = "Register to start tracking your expenses.";
+      }
+    }
   }
 
   tabBtns.forEach((b) => {
